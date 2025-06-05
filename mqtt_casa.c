@@ -8,15 +8,14 @@
 #include "lwip/apps/mqtt_priv.h"    
 #include "lwip/dns.h"               
 
-#define WIFI_SSID "S.F.C 2"                  // Substitua pelo nome da sua rede Wi-Fi
-#define WIFI_PASSWORD "857aj431"            // Substitua pela senha da sua rede Wi-Fi
-#define MQTT_SERVER "192.168.0.60"          // Substitua pelo endereço do host - broket MQTT: Ex: 192.168.1.107
-#define MQTT_USERNAME "Hugo"                // Substitua pelo nome da host MQTT - Username
-#define MQTT_PASSWORD "hugo"                // Substitua pelo Password da host MQTT - credencial de acesso - caso exista
+#define WIFI_SSID "."                  // Substitua pelo nome da sua rede Wi-Fi
+#define WIFI_PASSWORD "."            // Substitua pela senha da sua rede Wi-Fi
+#define MQTT_SERVER "."          // Substitua pelo endereço do host - broket MQTT: Ex: 192.168.1.107
+#define MQTT_USERNAME "."                // Substitua pelo nome da host MQTT - Username
+#define MQTT_PASSWORD "."                // Substitua pelo Password da host MQTT - credencial de acesso - caso exista
 #define green_led 11
 #define blue_led 12
 #define red_led 13
-#define buz_a 21
 
 typedef struct estado{
     volatile bool l_1;
