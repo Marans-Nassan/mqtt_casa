@@ -55,6 +55,7 @@ typedef struct {
     bool stop_client;
 } MQTT_CLIENT_DATA_T;
 
+
 #ifndef DEBUG_printf
 #ifndef NDEBUG
 #define DEBUG_printf printf
@@ -92,22 +93,23 @@ typedef struct {
 #define MQTT_UNIQUE_TOPIC 0
 #endif
 
-void init_led(void);
-static float read_onboard_temperature(const char unit);
-static void pub_request_cb(__unused void *arg, err_t err);
-static const char *full_topic(MQTT_CLIENT_DATA_T *state, const char *name);
-static void set_lampadas(bool on_1, bool on_2, bool on_3, bool on_4);
-static void publish_temperature(MQTT_CLIENT_DATA_T *state);
-static void sub_request_cb(void *arg, err_t err);
-static void unsub_request_cb(void *arg, err_t err);
-static void sub_unsub_topics(MQTT_CLIENT_DATA_T* state, bool sub);
-static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags);
-static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len);
-static void temperature_worker_fn(async_context_t *context, async_at_time_worker_t *worker);
+void init_led(void); // Inicializa os GPIOs 11 - 13 como saídas e define nível lógico baixo
+static float read_onboard_temperature(const char unit); // Lê temperatura interna do RP2040 e converte para unidade especificada (C/F)
+static void pub_request_cb(__unused void *arg, err_t err); // Callback para tratamento de erros após publicação MQTT
+static const char *full_topic(MQTT_CLIENT_DATA_T *state, const char *name); // Gera nome completo do tópico MQTT (com ID do dispositivo se habilitado)
+static void set_lampadas(bool on_1, bool on_2, bool on_3, bool on_4); // Controla estados das lâmpadas (LEDs físico e Wi-Fi) e atualiza struct L
+static void publish_estado_lampadas(MQTT_CLIENT_DATA_T *state); // Publica estados atuais das lâmpadas via MQTT
+static void publish_temperature(MQTT_CLIENT_DATA_T *state); // Publica temperatura atual via MQTT se houve mudança desde última leitura
+static void sub_request_cb(void *arg, err_t err); // Callback para inscrição em tópicos (incrementa contador de subscriptions)
+static void unsub_request_cb(void *arg, err_t err); // Callback para cancelamento de inscrição (decrementa contador de subscriptions)
+static void sub_unsub_topics(MQTT_CLIENT_DATA_T* state, bool sub); // Inscreve/desinscreve nos tópicos de controle das lâmpadas
+static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags); // Processa mensagens recebidas (controle das lâmpadas via comandos MQTT)
+static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len); // Callback chamado quando nova publicação é recebida em tópico inscrito
+static void temperature_worker_fn(async_context_t *context, async_at_time_worker_t *worker); // Função agendada periodicamente para publicar temperatura
+static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status); // Callback de eventos de conexão MQTT (gerencia subscriptions pós-conexão)
+static void start_client(MQTT_CLIENT_DATA_T *state); // Inicia conexão com broker MQTT usando configurações do estado
+static void dns_found(const char *hostname, const ip_addr_t *ipaddr, void *arg); // Callback para resolução DNS (inicia cliente após obter IP do broker)
 static async_at_time_worker_t temperature_worker = { .do_work = temperature_worker_fn };
-static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status);
-static void start_client(MQTT_CLIENT_DATA_T *state);
-static void dns_found(const char *hostname, const ip_addr_t *ipaddr, void *arg);
 
 int main(void) {
 
@@ -181,7 +183,7 @@ int main(void) {
 }
 
 void init_led(void){
-    for(uint8_t i = 0; i < 14; i++){
+    for(uint8_t i = 11; i < 14; i++){
         gpio_init(i);
         gpio_set_dir(i, GPIO_OUT);
         gpio_put(i, 0);
